@@ -13,16 +13,16 @@
 const express = require('express');
 const { create, getAll, getOne, retry } = require('../controllers/scanController');
 const { protect } = require('../middleware/authMiddleware');
+const { optionalAuth } = require('../middleware/optionalAuthMiddleware');
 const { upload, handleMulterError } = require('../middleware/uploadMiddleware');
 
 const router = express.Router();
 
-// All scan routes require authentication.
-router.use(protect);
+// MVP BYPASS: Make the scan creation public (optional auth)
+router.post('/', optionalAuth, upload.single('image'), handleMulterError, create);
 
-// Create a new scan — upload image + AI analysis.
-// Multer parses the "image" field from multipart/form-data.
-router.post('/', upload.single('image'), handleMulterError, create);
+// The rest of the routes still require strict authentication (for history/retries)
+router.use(protect);
 
 // List all scans for the logged-in user.
 router.get('/', getAll);

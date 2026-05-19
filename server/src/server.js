@@ -28,8 +28,31 @@
 
 const app = require('./app');
 const env = require('./config/env');
-const { connectDatabase, disconnectDatabase } = require('./config/db');
+const { prisma, connectDatabase, disconnectDatabase } = require('./config/db');
 const { startNotificationScheduler, stopNotificationScheduler } = require('./services/notificationScheduler');
+
+// The UUID used for all unauthenticated public scans
+const MVP_USER_ID = '00000000-0000-0000-0000-000000000000';
+
+async function seedMvpUser() {
+  try {
+    const existing = await prisma.user.findUnique({ where: { id: MVP_USER_ID } });
+    if (!existing) {
+      await prisma.user.create({
+        data: {
+          id: MVP_USER_ID,
+          fullName: 'Public MVP User',
+          email: 'mvp@agromind.local',
+          passwordHash: 'MVP_NO_LOGIN',
+          role: 'FARMER',
+        },
+      });
+      console.log('✅ Public MVP User seeded successfully.');
+    }
+  } catch (error) {
+    console.error('⚠️ Could not seed MVP user:', error.message);
+  }
+}
 
 let server;
 
@@ -40,6 +63,7 @@ async function startServer() {
     // "fail-fast" behavior. Better to crash on startup than to accept
     // requests that will all fail with database errors.
     await connectDatabase();
+    await seedMvpUser();
     startNotificationScheduler();
 
     // Step 2: Start listening for HTTP requests.
