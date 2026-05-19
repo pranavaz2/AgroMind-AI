@@ -58,6 +58,8 @@ ai-service/models/*.csv
 ai-service/models/*.png
 ai-service/models/*
 !ai-service/models/.gitkeep
+!ai-service/models/plant_disease_model.keras
+!ai-service/models/class_names.json
 
 # Do NOT commit large trained models to GitHub!
 # Host them on GitHub Releases, Hugging Face, or AWS S3.
