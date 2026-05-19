@@ -1,0 +1,63 @@
+# ── AgroMind AI Monorepo ──────────────────────────────────
+# Top-level ignores that apply to the entire workspace
+
+# ── Dependency Directories ──
+node_modules/
+.venv/
+venv/
+env/
+
+# ── Secrets & Environment Variables ──
+.env
+.env.*
+!.env.example
+
+# ── Logs & Debugging ──
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+logs/
+
+# ── OS & Editor Files ──
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── Mobile Frontend (Expo / React Native) ──
+mobile/.expo/
+mobile/dist/
+mobile/web-build/
+mobile/android/
+mobile/ios/
+
+# ── Backend Orchestrator (Node.js & Prisma) ──
+server/build/
+server/dist/
+server/prisma/*.db
+server/prisma/*.db-journal
+server/prisma/migrations/
+
+# ── AI Microservice (Python / TensorFlow) ──
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+ai-service/data/
+ai-service/models/checkpoints/
+ai-service/models/logs/
+ai-service/models/*.keras
+ai-service/models/*.h5
+ai-service/models/*.tflite
+ai-service/models/*.json
+ai-service/models/*.csv
+ai-service/models/*.png
+ai-service/models/*
+!ai-service/models/.gitkeep
+
+# Do NOT commit large trained models to GitHub!
+# Host them on GitHub Releases, Hugging Face, or AWS S3.

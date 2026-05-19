@@ -1,0 +1,46 @@
+{
+  "model_version": "1.0.0",
+  "model_file": "leaf_disease.tflite",
+  "quantization": "float16",
+  "input": {
+    "shape": [
+      1,
+      224,
+      224,
+      3
+    ],
+    "dtype": "float32",
+    "image_size": 224,
+    "value_range": [
+      0,
+      1
+    ]
+  },
+  "output": {
+    "activation": "softmax",
+    "class_count": 2
+  },
+  "class_names_file": "class_names.json",
+  "tflite_size_bytes": 4428012,
+  "tflite_size_mb": 4.223,
+  "created_at": "2026-05-16T23:18:37",
+  "source_model": {
+    "format": "keras",
+    "tensorflow_version": "2.18.0",
+    "image_size": 224
+  },
+  "benchmark": {
+    "runs": 5,
+    "mean_ms": 8.129,
+    "p95_ms": 8.635,
+    "input_dtype": "<class 'numpy.float32'>",
+    "output_dtype": "<class 'numpy.float32'>",
+    "input_shape": [
+      1,
+      224,
+      224,
+      3
+    ]
+  },
+  "source_model_size_mb": 9.222
+}
