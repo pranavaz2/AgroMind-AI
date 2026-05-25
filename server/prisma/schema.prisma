@@ -1,0 +1,401 @@
+// ╔══════════════════════════════════════════════════════════════════════╗
+// ║                   AgroMind AI — Prisma Schema                      ║
+// ║                                                                    ║
+// ║  This file defines your ENTIRE database structure. When you run    ║
+// ║  `npm run prisma:migrate`, Prisma reads this file and generates   ║
+// ║  the SQL to create/update your PostgreSQL tables.                  ║
+// ╚══════════════════════════════════════════════════════════════════════╝
+//
+// ┌─────────────────────────────────────────────────────────────────────┐
+// │                    WHAT IS PRISMA ORM?                              │
+// │                                                                     │
+// │  Prisma is a "translator" between JavaScript and SQL.              │
+// │                                                                     │
+// │  Without Prisma (raw SQL):                                         │
+// │    const result = await pg.query(                                   │
+// │      'SELECT * FROM users WHERE email = $1', [email]               │
+// │    );                                                               │
+// │    const user = result.rows[0];                                     │
+// │                                                                     │
+// │  With Prisma:                                                       │
+// │    const user = await prisma.user.findUnique({                     │
+// │      where: { email }                                               │
+// │    });                                                              │
+// │                                                                     │
+// │  Benefits:                                                          │
+// │    ✅ Type-safe — catches typos before they reach the database     │
+// │    ✅ Auto-completion — your editor suggests field names           │
+// │    ✅ Migrations — tracks schema changes like Git tracks code     │
+// │    ✅ Relations — handles JOINs automatically                     │
+// │    ✅ Cross-database — same code works on PostgreSQL, MySQL, etc. │
+// └─────────────────────────────────────────────────────────────────────┘
+
+// ── Generator ─────────────────────────────────────────────────────────
+// This tells Prisma HOW to generate the client library.
+// After running `npx prisma generate`, a JavaScript client is created
+// in the `generated/prisma` folder. Your code imports from here.
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+// ── Datasource ────────────────────────────────────────────────────────
+// This tells Prisma WHERE your database is.
+// The connection URL comes from the DATABASE_URL environment variable.
+//
+// PostgreSQL URL format:
+//   postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public
+//
+// Example:
+//   postgresql://postgres:secret@localhost:5432/agromind_ai?schema=public
+datasource db {
+  provider = "postgresql"
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// ENUMS
+// ═══════════════════════════════════════════════════════════════════════
+// Enums restrict a column to a fixed set of values.
+// Think of them as dropdowns — the database will reject any value
+// that isn't in the list.
+
+/// The role determines what a user can do in the app.
+enum UserRole {
+  FARMER      // Regular user — can scan crops and manage farms
+  AGRONOMIST  // Expert — can provide advice (future feature)
+  ADMIN       // Full access — can manage all users and data
+}
+
+/// Account status for soft-deletes and moderation.
+enum UserStatus {
+  ACTIVE      // Normal operating state
+  SUSPENDED   // Temporarily blocked by admin
+  DELETED     // Soft-deleted (data preserved for auditing)
+}
+
+/// Unit of measurement for farm size.
+enum FarmUnit {
+  ACRE
+  HECTARE
+}
+
+/// Tracks the progress of an AI crop scan.
+enum CropScanStatus {
+  PENDING     // Image uploaded, AI hasn't processed it yet
+  COMPLETED   // AI analysis finished successfully
+  FAILED      // AI analysis failed (can be retried)
+}
+
+/// User's preferred language for the app interface.
+/// Defaults to ENGLISH. Add more as the app expands to new regions.
+enum Language {
+  ENGLISH
+  HINDI
+  MARATHI
+  TELUGU
+  TAMIL
+  KANNADA
+}
+
+enum NotificationType {
+  WEATHER_ALERT
+  DISEASE_ALERT
+  FARMING_REMINDER
+  SCAN_COMPLETION
+}
+
+enum CommunityPostType {
+  POST
+  QUESTION
+}
+
+enum ChatRole {
+  USER
+  ASSISTANT
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// MODELS (Database Tables)
+// ═══════════════════════════════════════════════════════════════════════
+//
+// ┌─────────────────────────────────────────────────────────────────────┐
+// │                    DATABASE RELATIONSHIPS                           │
+// │                                                                     │
+// │    User ──┬── has many ──▶ Farm                                    │
+// │           └── has many ──▶ CropScan                                │
+// │                                                                     │
+// │    Farm ──── has many ──▶ CropScan                                 │
+// │                                                                     │
+// │    CropScan ──┬── belongs to ──▶ User (required)                   │
+// │               └── belongs to ──▶ Farm (optional)                   │
+// └─────────────────────────────────────────────────────────────────────┘
+//
+// What does "has many" mean?
+//   One User can own MULTIPLE Farms. One Farm can have MULTIPLE CropScans.
+//   In SQL, this is implemented with foreign keys (farmId → farms.id).
+//
+// What does "belongs to" mean?
+//   Each CropScan has a userId column that points back to the User who
+//   created it. This is a foreign key relationship.
+
+/// ── User Model ───────────────────────────────────────────────────────
+/// Stores all registered users (farmers, agronomists, admins).
+///
+/// Prisma field reference:
+///   @id           → This field is the primary key
+///   @default(uuid()) → Auto-generate a UUID when a new row is created
+///   @db.Uuid      → Use PostgreSQL's native UUID type (more efficient)
+///   @unique       → No two users can have the same email
+///   @map("...")    → The SQL column name (snake_case for SQL convention)
+///   @updatedAt    → Prisma auto-updates this timestamp on every save
+///   @@map("...")   → The SQL table name
+model User {
+  id              String         @id @default(uuid()) @db.Uuid
+  fullName        String         @map("full_name")
+  email           String         @unique
+  passwordHash    String         @map("password_hash")
+  role            UserRole       @default(FARMER)
+  status          UserStatus     @default(ACTIVE)
+  phoneNumber     String?        @map("phone_number")
+  emailVerifiedAt DateTime?      @map("email_verified_at")
+  lastLoginAt     DateTime?      @map("last_login_at")
+
+  // Location — the farmer's city, district, or region.
+  // Optional because some users may not want to share this.
+  // Used for region-specific crop recommendations in the future.
+  location        String?
+
+  // Language preference — controls the app's display language.
+  // Defaults to ENGLISH. The mobile app reads this to set the UI language.
+  language        Language       @default(ENGLISH)
+
+  // Relations — these DON'T create columns in SQL.
+  // They tell Prisma how to JOIN tables when you use `include: { farms: true }`.
+  farms           Farm[]
+  cropScans       CropScan[]
+  notificationTokens NotificationToken[]
+  notifications   Notification[]
+  reminders       FarmingReminder[]
+  communityPosts  CommunityPost[]
+  communityComments CommunityComment[]
+  communityLikes  CommunityLike[]
+  assistantConversations AssistantConversation[]
+
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model AssistantConversation {
+  id             String             @id @default(uuid()) @db.Uuid
+  userId         String             @map("user_id") @db.Uuid
+  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title          String             @default("Farming chat")
+  memorySummary  String?            @map("memory_summary")
+  lastMessageAt  DateTime           @default(now()) @map("last_message_at")
+  messages       AssistantMessage[]
+  createdAt      DateTime           @default(now()) @map("created_at")
+  updatedAt      DateTime           @updatedAt @map("updated_at")
+
+  @@index([userId, lastMessageAt])
+  @@map("assistant_conversations")
+}
+
+model AssistantMessage {
+  id             String                @id @default(uuid()) @db.Uuid
+  conversationId String                @map("conversation_id") @db.Uuid
+  conversation   AssistantConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           ChatRole
+  content        String
+  metadata       Json?
+  createdAt      DateTime              @default(now()) @map("created_at")
+
+  @@index([conversationId, createdAt])
+  @@map("assistant_messages")
+}
+
+model CommunityPost {
+  id          String            @id @default(uuid()) @db.Uuid
+  authorId    String            @map("author_id") @db.Uuid
+  author      User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  type        CommunityPostType @default(POST)
+  title       String?
+  body        String
+  imageUrl    String?           @map("image_url")
+  imagePublicId String?         @map("image_public_id")
+  cropName    String?           @map("crop_name")
+  location    String?
+  isResolved  Boolean           @default(false) @map("is_resolved")
+  comments    CommunityComment[]
+  likes       CommunityLike[]
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+
+  @@index([createdAt])
+  @@index([authorId, createdAt])
+  @@map("community_posts")
+}
+
+model CommunityComment {
+  id        String        @id @default(uuid()) @db.Uuid
+  postId    String        @map("post_id") @db.Uuid
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId  String        @map("author_id") @db.Uuid
+  author    User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  body      String
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  @@index([postId, createdAt])
+  @@index([authorId, createdAt])
+  @@map("community_comments")
+}
+
+model CommunityLike {
+  id        String        @id @default(uuid()) @db.Uuid
+  postId    String        @map("post_id") @db.Uuid
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String        @map("user_id") @db.Uuid
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime      @default(now()) @map("created_at")
+
+  @@unique([postId, userId])
+  @@index([userId, createdAt])
+  @@map("community_likes")
+}
+
+model NotificationToken {
+  id           String   @id @default(uuid()) @db.Uuid
+  token        String   @unique
+  platform     String?
+  deviceName   String?  @map("device_name")
+  userId       String   @map("user_id") @db.Uuid
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lastUsedAt   DateTime @default(now()) @map("last_used_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("notification_tokens")
+}
+
+model Notification {
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String           @map("user_id") @db.Uuid
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  title     String
+  body      String
+  data      Json?
+  sentAt    DateTime         @default(now()) @map("sent_at")
+  readAt    DateTime?        @map("read_at")
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@map("notifications")
+}
+
+model FarmingReminder {
+  id              String           @id @default(uuid()) @db.Uuid
+  userId          String           @map("user_id") @db.Uuid
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title           String
+  body            String
+  type            NotificationType @default(FARMING_REMINDER)
+  scheduledFor    DateTime         @map("scheduled_for")
+  isRecurring     Boolean          @default(false) @map("is_recurring")
+  recurrenceRule  String?          @map("recurrence_rule")
+  lastSentAt      DateTime?        @map("last_sent_at")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  @@index([userId, scheduledFor])
+  @@map("farming_reminders")
+}
+
+/// ── Farm Model ───────────────────────────────────────────────────────
+/// Represents a physical farm owned by a user.
+/// A scan can optionally be associated with a farm for organization.
+///
+/// Relationship: Many farms belong to one user (many-to-one).
+///   ownerId  → Foreign key column stored in the "farms" table
+///   owner    → Virtual field for Prisma to resolve the JOIN
+///   onDelete: Cascade → If the user is deleted, their farms are too
+model Farm {
+  id        String     @id @default(uuid()) @db.Uuid
+  name      String
+  location  String?
+  size      Decimal?   @db.Decimal(10, 2)
+  unit      FarmUnit   @default(ACRE)
+  ownerId   String     @map("owner_id") @db.Uuid
+  owner     User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  cropScans CropScan[]
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  // @@index speeds up queries that filter by ownerId.
+  // Without it, PostgreSQL does a full table scan every time.
+  // With it, PostgreSQL uses a B-tree index for O(log n) lookups.
+  @@index([ownerId])
+  @@map("farms")
+}
+
+/// ── CropScan Model ───────────────────────────────────────────────────
+/// Stores the result of an AI crop disease analysis.
+///
+/// Workflow:
+///   1. User uploads a leaf image → imageUrl is set
+///   2. AI analyzes the image → aiSummary + confidence are set
+///   3. status changes from PENDING → COMPLETED (or FAILED)
+///
+/// Relationships:
+///   userId (required) → Every scan belongs to a user
+///   farmId (optional) → A scan can optionally be linked to a farm
+///   onDelete: Cascade → Delete user's scans when user is deleted
+///   onDelete: SetNull → If farm is deleted, keep the scan but clear farmId
+model CropScan {
+  id             String         @id @default(uuid()) @db.Uuid
+  cropName       String         @map("crop_name")
+  imageUrl       String?        @map("image_url")
+  aiSummary      String?        @map("ai_summary")
+  status         CropScanStatus @default(PENDING)
+  confidence     Decimal?       @db.Decimal(5, 2)
+  userId         String         @map("user_id") @db.Uuid
+  farmId         String?        @map("farm_id") @db.Uuid
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  farm           Farm?          @relation(fields: [farmId], references: [id], onDelete: SetNull)
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([farmId])
+  @@map("crop_scans")
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// MIGRATIONS CHEAT SHEET
+// ═══════════════════════════════════════════════════════════════════════
+//
+// What are migrations?
+//   Migrations are "version control for your database". Every time you
+//   change this schema, Prisma creates a SQL migration file that records
+//   exactly what changed. This lets you:
+//     ✅ Roll forward (apply changes to production)
+//     ✅ Track history (see what changed and when)
+//     ✅ Collaborate (team members run migrations to sync their DB)
+//
+// Commands:
+//   npm run prisma:generate   → Generate the Prisma client (after schema changes)
+//   npm run prisma:migrate    → Create + apply a new migration (development)
+//   npm run prisma:deploy     → Apply pending migrations (production)
+//   npm run prisma:reset      → Drop all tables + re-apply all migrations
+//   npm run prisma:studio     → Open the visual database browser
+//
+// Workflow for schema changes:
+//   1. Edit this file (e.g., add a new field)
+//   2. Run: npm run prisma:migrate
+//   3. Prisma asks for a migration name (e.g., "add-phone-to-user")
+//   4. Prisma generates SQL in prisma/migrations/<timestamp>_<name>/
+//   5. Prisma applies the SQL to your database
+//   6. Run: npm run prisma:generate (regenerate the client)

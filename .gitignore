@@ -1,0 +1,25 @@
+# ── AgroMind AI Monorepo ──────────────────────────────────
+# Top-level ignores that apply to both mobile/ and server/
+
+node_modules/
+.env
+*.log
+.DS_Store
+
+# Python / AI microservice
+__pycache__/
+*.py[cod]
+.venv/
+ai-service/.env
+ai-service/data/
+ai-service/models/checkpoints/
+ai-service/models/logs/
+ai-service/models/*.json
+ai-service/models/*.csv
+ai-service/models/*.png
+ai-service/models/*
+!ai-service/models/.gitkeep
+
+# Editor config
+.vscode/
+.idea/

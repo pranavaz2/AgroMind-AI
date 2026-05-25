@@ -1,0 +1,58 @@
+{
+  "expo": {
+    "name": "AgroMind AI",
+    "slug": "agromind-ai",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#030B07"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "AgroMind AI uses the camera to scan crop leaves for disease detection.",
+        "NSPhotoLibraryUsageDescription": "AgroMind AI uses your photo library so you can upload crop images for scanning.",
+        "NSLocationWhenInUseUsageDescription": "AgroMind AI uses your location to show live farm weather and weather-based crop suggestions.",
+        "NSMicrophoneUsageDescription": "AgroMind AI uses the microphone so you can ask farming questions by voice."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#030B07"
+      },
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "CAMERA",
+        "READ_MEDIA_IMAGES",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "RECORD_AUDIO",
+        "POST_NOTIFICATIONS",
+        "VIBRATE"
+      ],
+      "package": "com.pranavaz2.agromindai"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-location",
+      "expo-notifications",
+      "expo-localization"
+    ],
+    "extra": {
+      "apiBaseUrl": "",
+      "eas": {
+        "projectId": "2275904a-6607-450f-8019-c21e05a424c1"
+      }
+    },
+    "owner": "pranavaz2"
+  }
+}
