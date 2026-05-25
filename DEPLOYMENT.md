@@ -11,6 +11,10 @@ This project deploys as three backend resources and one mobile build:
 
 Use the root `render.yaml` blueprint.
 
+The blueprint uses Render's free plans for the two web services and Postgres.
+Free services are good for testing, but they can spin down when idle and free
+Postgres databases can expire. Upgrade the plans before production use.
+
 Before creating the blueprint, set these secret environment variables in Render:
 
 - `CLOUDINARY_CLOUD_NAME`
