@@ -71,17 +71,6 @@ async function analyzeLeafImage(imageBuffer, mimeType) {
     throw new AppError('FastAPI AI service URL is not configured (AI_SERVICE_URL).', 503);
   }
 
-  const formData = new FormData();
-  const extension = mimeType?.split('/')[1] || 'jpeg';
-  
-  // Append the file buffer under both keys to support old ("file") and new ("image") FastAPI endpoints.
-  const fileOptions = {
-    filename: `leaf.${extension}`,
-    contentType: mimeType || 'image/jpeg',
-  };
-  formData.append('file', imageBuffer, fileOptions);
-  formData.append('image', imageBuffer, fileOptions);
-
   const predictionEndpoints = [
     { path: '/api/v1/predictions/leaf-disease', isNew: true },
     { path: '/api/predict', isNew: false }
@@ -91,6 +80,17 @@ async function analyzeLeafImage(imageBuffer, mimeType) {
 
   for (const endpoint of predictionEndpoints) {
     try {
+      const formData = new FormData();
+      const extension = mimeType?.split('/')[1] || 'jpeg';
+      
+      // Append the file buffer under both keys to support old ("file") and new ("image") FastAPI endpoints.
+      const fileOptions = {
+        filename: `leaf.${extension}`,
+        contentType: mimeType || 'image/jpeg',
+      };
+      formData.append('file', imageBuffer, fileOptions);
+      formData.append('image', imageBuffer, fileOptions);
+
       const url = buildFastApiUrl(endpoint.path);
       const response = await axios.post(
         url,

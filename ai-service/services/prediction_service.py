@@ -109,14 +109,16 @@ def predict_disease(image_tensor: np.ndarray) -> dict:
     prediction_time_ms = int((end_time - start_time) * 1000)
     
     # 4. Fetch knowledge base info
-    knowledge = DISEASE_KNOWLEDGE.get(top_class, {
+    # Normalize class name for knowledge base lookup: "Tomato - Early blight" -> "Tomato___Early_blight"
+    normalized_class = top_class.replace(" - ", "___").replace(" ", "_")
+    knowledge = DISEASE_KNOWLEDGE.get(normalized_class, {
         "severity": "Unknown",
         "treatment": "Consult a local agricultural expert.",
         "prevention": "Maintain standard farm hygiene."
     })
     
-    # Format display name (e.g., "Tomato___Early_blight" -> "Tomato Early blight")
-    display_name = top_class.replace("___", " ").replace("_", " ")
+    # Format display name
+    display_name = top_class.replace("___", " - ").replace("_", " ")
     
     # 5. Check if confidence is too low (e.g., < 50%)
     if top_confidence < 0.50:
