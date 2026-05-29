@@ -15,7 +15,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://agromind-backend.up.railway.app/api/v1",
+        "EXPO_PUBLIC_API_URL": "https://agromind-backend-qdwa.onrender.com/api/v1",
         "EXPO_PUBLIC_ENABLE_OFFLINE_MODE": "false"
       }
     }
