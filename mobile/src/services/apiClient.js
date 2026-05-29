@@ -25,15 +25,22 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
+import { Platform } from 'react-native';
+
 // ── Configuration ───────────────────────────────────────────────────────
 
-// When running on an Android emulator, "localhost" refers to the emulator
-// itself — not your computer. Use 10.0.2.2 to reach your computer's localhost.
-// On a physical device, use your computer's LAN IP (e.g., 192.168.1.100).
+// Resolve base URL: check environment variables first, then fallback to
+// localhost (iOS/Web) or 10.0.2.2 (Android Emulator).
+const getBaseUrl = () => {
+  if (process.env.EXPO_PUBLIC_API_URL) {
+    return process.env.EXPO_PUBLIC_API_URL;
+  }
+  return Platform.OS === 'android'
+    ? 'http://10.0.2.2:5000/api/v1'
+    : 'http://localhost:5000/api/v1';
+};
 
-const BASE_URL = 'http://10.152.237.15:5000/api/v1';
-// For Android emulator: 'http://10.0.2.2:5000/api/v1'
-// For iOS simulator:    'http://localhost:5000/api/v1'
+const BASE_URL = getBaseUrl();
 
 const TOKEN_KEY = 'agromind_auth_token';
 

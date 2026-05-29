@@ -78,7 +78,13 @@ app.use(helmet());
 
 app.use(
   cors({
-    origin: env.isProduction ? env.clientUrl : '*',
+    origin: (origin, callback) => {
+      if (env.clientUrl === '*' || !origin || origin === env.clientUrl) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
   })
 );

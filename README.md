@@ -39,7 +39,7 @@
 ---
 
 ## ✨ Key Features & Engineering Highlights
-- **High-Accuracy ML Pipeline**: Built and fine-tuned a custom TensorFlow MobileNetV2 architecture achieving **98.35% validation accuracy** and **100% Top-3 accuracy**.
+- **High-Accuracy ML Pipeline**: Built and fine-tuned a custom TensorFlow MobileNetV2 architecture achieving **98.35% validation accuracy** on target testing datasets.
 - **Fail-Fast Upload Orchestration**: The Node.js backend intelligently routes image buffers to the AI service *before* permanent cloud storage. If the AI rejects the image, the upload is aborted, drastically cutting Cloudinary storage costs.
 - **Microservice Architecture**: Decoupled the machine learning inference (FastAPI) from the application logic (Node.js) to allow independent scaling of the computationally expensive AI workloads.
 - **Resilient Mobile UX**: The React Native frontend features dynamic upload progress tracking, a 70% low-confidence warning guardrail, and graceful retry loops for unstable farm networks.
