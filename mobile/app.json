@@ -36,15 +36,6 @@
         "POST_NOTIFICATIONS",
         "VIBRATE",
         "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION",
-        "CAMERA",
-        "READ_MEDIA_IMAGES",
-        "ACCESS_COARSE_LOCATION",
-        "ACCESS_FINE_LOCATION",
-        "RECORD_AUDIO",
-        "POST_NOTIFICATIONS",
-        "VIBRATE",
-        "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION"
       ],
       "package": "com.anonymous.agromindai"
@@ -56,6 +47,11 @@
       "expo-secure-store",
       "expo-location",
       "expo-notifications"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "2275904a-6607-450f-8019-c21e05a424c1"
+      }
+    }
   }
 }

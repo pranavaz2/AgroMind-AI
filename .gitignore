@@ -39,7 +39,6 @@ server/build/
 server/dist/
 server/prisma/*.db
 server/prisma/*.db-journal
-server/prisma/migrations/
 
 # ── AI Microservice (Python / TensorFlow) ──
 __pycache__/
