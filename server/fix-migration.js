@@ -19,7 +19,7 @@ async function run() {
     console.log("Successfully connected. Deleting failed migration record...");
     const res = await client.query(`
       DELETE FROM _prisma_migrations 
-      WHERE migration_name = '20260514174350_sync_latest_schema';
+      WHERE finished_at IS NULL;
     `);
     console.log(`Deleted ${res.rowCount} row(s) from _prisma_migrations.`);
   } catch (err) {
